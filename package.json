@@ -1,7 +1,7 @@
 {
   "name": "test-electron-vite",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Electron app with Vite and React",
   "author": "Your Name",
   "type": "module",
