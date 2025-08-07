@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { UpdateInfo } from '../types/electron';
-import type { IpcRendererEvent } from 'electron';
+import type { UpdateInfo, IpcRendererEvent } from '../types/electron';
 
 export const UpdateManager = () => {
   const [updateStatus, setUpdateStatus] = useState<string>('');

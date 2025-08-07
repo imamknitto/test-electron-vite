@@ -1,3 +1,9 @@
+// Define IpcRendererEvent type locally to avoid importing from electron in renderer
+export type IpcRendererEvent = {
+  sender: any;
+  ports: MessagePort[];
+};
+
 export interface UpdateInfo {
   version: string;
   releaseDate: string;
