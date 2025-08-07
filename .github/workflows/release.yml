@@ -10,6 +10,7 @@ on:
 jobs:
   release:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
@@ -39,4 +40,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx electron-builder --${{ matrix.platform }} --publish=always --config.asar=false
+          npm run build:electron:${{ matrix.platform }}:ci -- --publish=always
+        timeout-minutes: 30
