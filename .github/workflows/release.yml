@@ -39,4 +39,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx electron-builder --${{ matrix.platform }} --publish=always
+          npx electron-builder --${{ matrix.platform }} --publish=always --config.asar=false

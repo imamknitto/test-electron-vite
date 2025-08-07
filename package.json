@@ -71,8 +71,8 @@
         "to": "dist"
       }
     ],
-    "asar": true,
-    "compression": "maximum",
+    "asar": false,
+    "compression": "normal",
     "publish": {
       "provider": "github",
       "owner": "imamknitto",
