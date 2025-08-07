@@ -1,13 +1,13 @@
 {
   "name": "test-electron-vite",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Electron app with Vite and React",
   "author": "Your Name",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron electron/main.js\"",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "build:electron": "npm run build && electron-builder",
     "build:electron:win": "npm run build && electron-builder --win",
     "build:electron:mac": "npm run build && electron-builder --mac",
