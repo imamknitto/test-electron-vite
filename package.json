@@ -20,7 +20,9 @@
     "publish:minor": "npm run version:minor && npm run build && electron-builder --win --mac --publish=always",
     "publish:major": "npm run version:major && npm run build && electron-builder --win --mac --publish=always",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release:prepare": "npm run version:patch && git push origin HEAD",
+    "release:publish": "git push origin v$(node -p \"require('./package.json').version\")"
   },
   "dependencies": {
     "concurrently": "^9.2.0",
