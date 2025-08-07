@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron electron/main.js\"",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "build:electron": "npm run build && electron-builder",
     "build:electron:win": "npm run build && electron-builder --win",
     "build:electron:mac": "npm run build && electron-builder --mac",
