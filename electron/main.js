@@ -37,7 +37,8 @@ function createWindow() {
     }, 1000);
   } else {
     // In production, load from built files
-    mainWindow.loadFile(path.join(__dirname, "dist/index.html"));
+    // dist berada di root app, sejajar dengan folder electron
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 }
 

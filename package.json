@@ -15,7 +15,8 @@
     "version:minor": "node scripts/version.js minor",
     "version:major": "node scripts/version.js major",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start:prod": "cross-env NODE_ENV=production electron electron/main.js"
   },
   "dependencies": {
     "concurrently": "^9.2.0",
