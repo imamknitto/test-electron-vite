@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { UpdateInfo, IpcRendererEvent } from '../types/electron';
 
 export const UpdateManager = () => {
+  const DEBUG_PREFIX = '[updater]';
   const [updateStatus, setUpdateStatus] = useState<string>('');
   const [updateAvailable, setUpdateAvailable] = useState<UpdateInfo | null>(null);
   const [updateDownloaded, setUpdateDownloaded] = useState(false);
@@ -13,16 +14,19 @@ export const UpdateManager = () => {
     // Listen for update events
     window.electron?.onUpdateStatus((_event: IpcRendererEvent, status: string) => {
       setUpdateStatus(status);
+      console.info(DEBUG_PREFIX, status);
     });
 
     window.electron?.onUpdateAvailable((_, info: UpdateInfo) => {
       setUpdateAvailable(info);
       setUpdateStatus('Update available!');
+      console.info(`${DEBUG_PREFIX} update-available`, info);
     });
 
     window.electron?.onUpdateDownloaded(() => {
       setUpdateDownloaded(true);
       setUpdateStatus('Update downloaded and ready to install!');
+      console.info(`${DEBUG_PREFIX} update-downloaded`);
     });
 
     // Fetch versions in order to avoid mismatches
@@ -36,8 +40,10 @@ export const UpdateManager = () => {
         } else {
           setAppVersion(aVer || (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''));
         }
+        console.info(`${DEBUG_PREFIX} versions`, { app: aVer, electron: eVer, fallback: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '' });
       } catch {
         setAppVersion(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '');
+        console.info(`${DEBUG_PREFIX} versions fetch failed, using fallback`, { fallback: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '' });
       } finally {
         checkForUpdates();
       }
@@ -47,10 +53,12 @@ export const UpdateManager = () => {
   const checkForUpdates = async () => {
     setIsChecking(true);
     try {
+      console.info(`${DEBUG_PREFIX} invoking checkForUpdates()`);
       await window.electron?.checkForUpdates();
     } catch (error) {
       console.error('Error checking for updates:', error);
       setUpdateStatus('Error checking for updates');
+      console.info(`${DEBUG_PREFIX} checkForUpdates failed:`, error);
     } finally {
       setIsChecking(false);
     }
@@ -58,6 +66,7 @@ export const UpdateManager = () => {
 
   const downloadUpdate = async () => {
     try {
+      console.info(`${DEBUG_PREFIX} invoking downloadUpdate()`);
       await window.electron?.downloadUpdate();
       setUpdateStatus('Downloading update...');
     } catch (error) {
@@ -67,6 +76,7 @@ export const UpdateManager = () => {
   };
 
   const installUpdate = () => {
+    console.info(`${DEBUG_PREFIX} invoking installUpdate()`);
     window.electron?.installUpdate();
   };
 
