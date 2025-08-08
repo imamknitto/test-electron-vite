@@ -25,7 +25,10 @@ export const UpdateManager = () => {
     });
 
     // Fetch version & check for updates on component mount
-    window.electron?.getAppVersion()?.then(setAppVersion).catch(() => {});
+    window.electron?.getAppVersion()?.then(setAppVersion).catch(() => {
+      // Fallback to build-time version defined by Vite
+      setAppVersion(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '');
+    });
     checkForUpdates();
   }, []);
 
