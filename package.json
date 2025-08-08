@@ -1,9 +1,9 @@
 {
   "name": "test-electron-vite",
   "private": true,
-  "version": "0.0.5",
+  "version": "1.0.0",
   "description": "Electron app with Vite and React",
-  "author": "Your Name",
+  "author": "CDSTASH",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron electron/main.js\"",
@@ -42,8 +42,8 @@
   },
   "main": "electron/main.js",
   "build": {
-    "appId": "com.example.myapp",
-    "productName": "MyElectronApp",
+    "appId": "com.imamcorp.test-electron-vite",
+    "productName": "Test Vite Electron",
     "directories": {
       "output": "release-builds"
     },
