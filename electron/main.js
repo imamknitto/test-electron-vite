@@ -9,8 +9,22 @@ const __dirname = path.dirname(__filename);
 let mainWindow;
 let autoUpdater;
 
-// Only import auto-updater in production
-if (process.env.NODE_ENV !== 'development') {
+function getAppVersionString() {
+  try {
+    const appPath = app.isPackaged
+      ? path.join(process.resourcesPath, "app")
+      : app.getAppPath();
+    const pkgPath = path.join(appPath, "package.json");
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+      if (pkg && typeof pkg.version === "string") return pkg.version;
+    }
+  } catch {}
+  return app.getVersion();
+}
+
+// Initialize auto-updater only when the app is packaged (installed)
+if (app.isPackaged) {
   import("electron-updater").then(({ autoUpdater: updater }) => {
     autoUpdater = updater;
     setupAutoUpdater();
@@ -18,7 +32,7 @@ if (process.env.NODE_ENV !== 'development') {
       try {
         autoUpdater.checkForUpdates();
       } catch (error) {
-        console.error('Error checking for updates on init:', error);
+        console.error("Error checking for updates on init:", error);
       }
     }
   });
@@ -38,10 +52,10 @@ function createWindow() {
   });
 
   // In development, load from Vite dev server
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     // Wait a bit for Vite to start
     setTimeout(() => {
-      mainWindow.loadURL('http://localhost:5173');
+      mainWindow.loadURL("http://localhost:5173");
       mainWindow.webContents.openDevTools();
     }, 1000);
   } else {
@@ -60,75 +74,85 @@ function setupAutoUpdater() {
   autoUpdater.allowPrerelease = true;
 
   // Auto-updater events
-  autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('Checking for update...');
+  autoUpdater.on("checking-for-update", () => {
+    sendStatusToWindow("Checking for update...");
   });
 
-  autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow('Update available.');
-    mainWindow.webContents.send('update-available', info);
+  autoUpdater.on("update-available", (info) => {
+    sendStatusToWindow(
+      `Update available: ${info?.version ?? "unknown"} (current ${getAppVersionString()})`
+    );
+    mainWindow.webContents.send("update-available", info);
   });
 
-  autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('Update not available.');
+  autoUpdater.on("update-not-available", (info) => {
+    sendStatusToWindow(`Update not available. Current ${getAppVersionString()}`);
   });
 
-  autoUpdater.on('error', (err) => {
+  autoUpdater.on("error", (err) => {
     sendStatusToWindow(`Error in auto-updater: ${err.message}`);
   });
 
-  autoUpdater.on('download-progress', (progressObj) => {
+  autoUpdater.on("download-progress", (progressObj) => {
     let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    log_message = log_message + " - Downloaded " + progressObj.percent + "%";
+    log_message =
+      log_message +
+      " (" +
+      progressObj.transferred +
+      "/" +
+      progressObj.total +
+      ")";
     sendStatusToWindow(log_message);
   });
 
-  autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('Update downloaded; will install on quit');
-    mainWindow.webContents.send('update-downloaded', info);
+  autoUpdater.on("update-downloaded", (info) => {
+    sendStatusToWindow("Update downloaded; will install on quit");
+    mainWindow.webContents.send("update-downloaded", info);
   });
 }
 
 function sendStatusToWindow(text) {
   if (mainWindow) {
-    mainWindow.webContents.send('update-status', text);
+    mainWindow.webContents.send("update-status", text);
   }
 }
 
 // IPC handlers for update actions
-ipcMain.handle('app-version', () => {
-  try {
-    const appPath = app.isPackaged
-      ? path.join(process.resourcesPath, 'app')
-      : app.getAppPath();
-    const pkgPath = path.join(appPath, 'package.json');
-    if (fs.existsSync(pkgPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      if (pkg && typeof pkg.version === 'string') return pkg.version;
-    }
-  } catch {}
-  return app.getVersion();
+ipcMain.handle("app-version", () => {
+  return getAppVersionString();
 });
-ipcMain.handle('check-for-updates', async () => {
-  if (!autoUpdater) return;
+ipcMain.handle("check-for-updates", async () => {
+  if (!autoUpdater) {
+    sendStatusToWindow(
+      `Updater not initialized. isPackaged=${app.isPackaged} NODE_ENV=${process.env.NODE_ENV ?? "undefined"}. Build and install the app to enable updates.`
+    );
+    return;
+  }
   try {
-    await autoUpdater.checkForUpdates();
+    sendStatusToWindow("Renderer invoked checkForUpdates()");
+    const result = await autoUpdater.checkForUpdates();
+    if (result && result.updateInfo) {
+      sendStatusToWindow(`Checked. Latest: ${result.updateInfo.version}`);
+    } else {
+      sendStatusToWindow('Checked. No update info.');
+    }
   } catch (error) {
-    console.error('Error checking for updates:', error);
+    console.error("Error checking for updates:", error);
+    sendStatusToWindow(`Check failed: ${String(error)}`);
   }
 });
 
-ipcMain.handle('download-update', async () => {
+ipcMain.handle("download-update", async () => {
   if (!autoUpdater) return;
   try {
     await autoUpdater.downloadUpdate();
   } catch (error) {
-    console.error('Error downloading update:', error);
+    console.error("Error downloading update:", error);
   }
 });
 
-ipcMain.handle('install-update', () => {
+ipcMain.handle("install-update", () => {
   if (!autoUpdater) return;
   autoUpdater.quitAndInstall();
 });
