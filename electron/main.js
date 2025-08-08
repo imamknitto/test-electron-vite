@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,7 +29,8 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      // gunakan preload CommonJS agar kompatibel di production installer
+      preload: path.join(__dirname, "preload.cjs"),
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
@@ -95,7 +97,19 @@ function sendStatusToWindow(text) {
 }
 
 // IPC handlers for update actions
-ipcMain.handle('app-version', () => app.getVersion());
+ipcMain.handle('app-version', () => {
+  try {
+    const appPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'app')
+      : app.getAppPath();
+    const pkgPath = path.join(appPath, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      if (pkg && typeof pkg.version === 'string') return pkg.version;
+    }
+  } catch {}
+  return app.getVersion();
+});
 ipcMain.handle('check-for-updates', async () => {
   if (!autoUpdater) return;
   try {

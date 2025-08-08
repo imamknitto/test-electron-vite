@@ -7,6 +7,7 @@ export const UpdateManager = () => {
   const [updateDownloaded, setUpdateDownloaded] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [appVersion, setAppVersion] = useState<string>('');
+  const [electronVersion, setElectronVersion] = useState<string>('');
 
   useEffect(() => {
     // Listen for update events
@@ -24,12 +25,23 @@ export const UpdateManager = () => {
       setUpdateStatus('Update downloaded and ready to install!');
     });
 
-    // Fetch version & check for updates on component mount
-    window.electron?.getAppVersion()?.then(setAppVersion).catch(() => {
-      // Fallback to build-time version defined by Vite
-      setAppVersion(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '');
-    });
-    checkForUpdates();
+    // Fetch versions in order to avoid mismatches
+    (async () => {
+      try {
+        const eVer = await window.electron?.getElectronVersion?.();
+        setElectronVersion(eVer || '');
+        const aVer = await window.electron?.getAppVersion?.();
+        if (aVer && eVer && aVer === eVer) {
+          setAppVersion(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : aVer);
+        } else {
+          setAppVersion(aVer || (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''));
+        }
+      } catch {
+        setAppVersion(typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '');
+      } finally {
+        checkForUpdates();
+      }
+    })();
   }, []);
 
   const checkForUpdates = async () => {
@@ -64,9 +76,15 @@ export const UpdateManager = () => {
       
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Current version:</span>
+          <span className="text-sm text-gray-600">App version:</span>
           <span className="text-sm font-mono">{appVersion || 'n/a'}</span>
         </div>
+        {electronVersion && (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">Electron version:</span>
+            <span className="text-sm font-mono">{electronVersion}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Status:</span>
           <span className="text-sm font-medium">{updateStatus || 'No updates checked'}</span>

@@ -14,6 +14,7 @@ export interface ElectronAPI {
   send: (channel: string, data: unknown) => void;
   on: (channel: string, func: (...args: unknown[]) => void) => void;
   getAppVersion: () => Promise<string>;
+  getElectronVersion: () => Promise<string>;
   checkForUpdates: () => Promise<void>;
   downloadUpdate: () => Promise<void>;
   installUpdate: () => void;
