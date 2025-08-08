@@ -13,6 +13,13 @@ if (process.env.NODE_ENV !== 'development') {
   import("electron-updater").then(({ autoUpdater: updater }) => {
     autoUpdater = updater;
     setupAutoUpdater();
+    if (app.isReady()) {
+      try {
+        autoUpdater.checkForUpdates();
+      } catch (error) {
+        console.error('Error checking for updates on init:', error);
+      }
+    }
   });
 }
 
@@ -48,6 +55,7 @@ function setupAutoUpdater() {
   // Auto-updater configuration
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.allowPrerelease = true;
 
   // Auto-updater events
   autoUpdater.on('checking-for-update', () => {
@@ -81,13 +89,13 @@ function setupAutoUpdater() {
 }
 
 function sendStatusToWindow(text) {
-  console.log(text);
   if (mainWindow) {
     mainWindow.webContents.send('update-status', text);
   }
 }
 
 // IPC handlers for update actions
+ipcMain.handle('app-version', () => app.getVersion());
 ipcMain.handle('check-for-updates', async () => {
   if (!autoUpdater) return;
   try {

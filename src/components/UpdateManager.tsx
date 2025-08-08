@@ -6,27 +6,26 @@ export const UpdateManager = () => {
   const [updateAvailable, setUpdateAvailable] = useState<UpdateInfo | null>(null);
   const [updateDownloaded, setUpdateDownloaded] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>('');
 
   useEffect(() => {
     // Listen for update events
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     window.electron?.onUpdateStatus((_event: IpcRendererEvent, status: string) => {
       setUpdateStatus(status);
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    window.electron?.onUpdateAvailable((_event: IpcRendererEvent, info: UpdateInfo) => {
+    window.electron?.onUpdateAvailable((_, info: UpdateInfo) => {
       setUpdateAvailable(info);
       setUpdateStatus('Update available!');
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    window.electron?.onUpdateDownloaded((_event: IpcRendererEvent, _info: UpdateInfo) => {
+    window.electron?.onUpdateDownloaded(() => {
       setUpdateDownloaded(true);
       setUpdateStatus('Update downloaded and ready to install!');
     });
 
-    // Check for updates on component mount
+    // Fetch version & check for updates on component mount
+    window.electron?.getAppVersion()?.then(setAppVersion).catch(() => {});
     checkForUpdates();
   }, []);
 
@@ -61,6 +60,10 @@ export const UpdateManager = () => {
       <h2 className="text-xl font-bold mb-4">App Updates</h2>
       
       <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">Current version:</span>
+          <span className="text-sm font-mono">{appVersion || 'n/a'}</span>
+        </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-600">Status:</span>
           <span className="text-sm font-medium">{updateStatus || 'No updates checked'}</span>
