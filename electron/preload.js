@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electron', {
   on: (channel, func) =>
     ipcRenderer.on(channel, (event, ...args) => func(...args)),
   // Auto-update methods
+  getAppVersion: () => ipcRenderer.invoke('app-version'),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   downloadUpdate: () => ipcRenderer.invoke('download-update'),
   installUpdate: () => ipcRenderer.invoke('install-update'),
