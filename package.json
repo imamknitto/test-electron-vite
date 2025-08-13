@@ -1,7 +1,7 @@
 {
   "name": "test-electron-vite",
   "private": true,
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Electron app with Vite and React",
   "author": "CDSTASH",
   "type": "module",
@@ -19,7 +19,8 @@
     "version:major": "node scripts/version.js major",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:prod": "cross-env NODE_ENV=production electron electron/main.js"
+    "start:prod": "cross-env NODE_ENV=production electron electron/main.js",
+    "package": "npm run build &&electron-builder --win -p always"
   },
   "dependencies": {
     "concurrently": "^9.2.0",
@@ -54,6 +55,7 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
+      "node_modules/**/*",
       "package.json"
     ],
     "win": {
